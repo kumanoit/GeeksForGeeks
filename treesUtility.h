@@ -15,8 +15,10 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-#include"queues.h"
 #include"myMath.h"
+#include"queues.h"
+#include"stack.h"
+#include"doublyLinkedList.h"
 
 void printPreOrder(struct TreeNode *root) {
 	if (!root) {
@@ -223,7 +225,7 @@ int getLevelOfNode(struct TreeNode *root, int value, int level) {
 }
 
 void printNodesAtDistanceKFromRoot(struct TreeNode *root, int k) {
-	if (!root) {
+	if (!root || k < 0) {
 		return;
 	}
 	if (k == 0) {
@@ -232,6 +234,45 @@ void printNodesAtDistanceKFromRoot(struct TreeNode *root, int k) {
 	}
 	printNodesAtDistanceKFromRoot(root -> leftChild, k - 1);
 	printNodesAtDistanceKFromRoot(root -> rightChild, k - 1);
+}
+
+int printNodesAtDistanceKFromAnyNode(struct TreeNode *root,
+		int ptr, int k, int *p) {
+	if (!root) {
+		return 0;
+	}
+	if (root -> value == ptr) {
+		printf("\nPrinting values rooted at given root.\n");
+		printNodesAtDistanceKFromRoot(root, k);
+		*p = 1;
+		return 1;
+	}
+	int left = printNodesAtDistanceKFromAnyNode(root ->leftChild, ptr, k, p);
+	int right = 0;
+	if (!left) {
+		right = printNodesAtDistanceKFromAnyNode(root -> rightChild, ptr, k, p);
+	}
+
+	if (left) {
+		if (k - *p == 0) {
+			printf("\t %d", root -> value);
+		} else {
+			printNodesAtDistanceKFromRoot(root -> rightChild, k - *p - 1);
+		}
+		(*p)++;
+		return 1;
+	}
+
+	if (right) {
+		if (k - *p == 0) {
+			printf("\t %d", root -> value);
+		} else {
+			printNodesAtDistanceKFromRoot(root -> leftChild, k - *p - 1);
+		}
+		(*p)++;
+		return 1;
+	}
+	return 0;
 }
 
 int isFoldable(struct TreeNode *root1, struct TreeNode *root2) {
@@ -354,4 +395,304 @@ void printLevelOrderSpiralForm(struct TreeNode *root) {
 	if (!root) {
 		return;
 	}
+	printf("\nSpiral level order traversal.\n");
+	struct TreeNodeStack stack1;
+	struct TreeNodeStack stack2;
+	setStack(&stack1);
+	setStack(&stack2);
+
+	push(&stack1, root);
+
+	while(!(isStackEmpty(&stack1) && (isStackEmpty(&stack2)))) {
+		struct TreeNode *ptr = NULL;
+		while(!isStackEmpty(&stack1)) {
+			ptr = pop(&stack1);
+			printf("%d\t", ptr -> value);
+			if (ptr -> rightChild) {
+				push(&stack2, ptr -> rightChild);
+			}
+			if (ptr -> leftChild) {
+				push(&stack2, ptr -> leftChild);
+			}
+		}
+		while(!isStackEmpty(&stack2)) {
+			ptr = pop(&stack2);
+			printf("%d\t", ptr -> value);
+			if (ptr -> leftChild) {
+				push(&stack1, ptr -> leftChild);
+			}
+			if (ptr -> rightChild) {
+				push(&stack1, ptr -> rightChild);
+			}
+		}
+	}
+}
+
+int isChildrenSumPropertyIntact(struct TreeNode *root) {
+	if (!root || isLeaf(root)) {
+		return 1;
+	}
+	int left = root -> leftChild ? root -> leftChild -> value : 0;
+	int right = root -> rightChild ? root -> rightChild -> value : 0;
+	if (root -> value != left + right) {
+		return 0;
+	}
+	return isChildrenSumPropertyIntact(root -> leftChild) &&
+			isChildrenSumPropertyIntact(root -> rightChild);
+}
+
+
+void updateChildren(struct TreeNode *root, int diff) {
+	if (root -> leftChild) {
+		root -> leftChild -> value += diff;
+		updateChildren(root -> leftChild, diff);
+	} else if (root -> rightChild) {
+		root -> rightChild -> value += diff;
+		updateChildren(root -> rightChild, diff);
+	}
+}
+
+/**
+ * construct a children sum property tree from a binary tree.
+ */
+int constructCSP(struct TreeNode *root) {
+	if(!root) {
+		return 0;
+	}
+	if (isLeaf(root)) {
+		return root -> value;
+	}
+	int leftValue = constructCSP(root -> leftChild);
+	int rightValue = constructCSP(root -> rightChild);
+	if (root -> value <= leftValue + rightValue) {
+		root -> value = leftValue + rightValue;
+	} else {
+		updateChildren(root, root -> value - (leftValue + rightValue));
+	}
+	return root -> value;
+}
+
+int printRootLeafSumEqualToGivenNumber(struct TreeNode *root, int sum) {
+	if (sum < 0) {
+		return 0;
+	}
+	sum -= root -> value;
+	if (sum == 0 || printRootLeafSumEqualToGivenNumber(root->leftChild, sum)
+			|| printRootLeafSumEqualToGivenNumber(root->rightChild, sum)) {
+		printf("%d\t", root -> value);
+		return 1;
+	}
+	return 0;
+}
+
+void morrisInorderTraversal(struct TreeNode *root) {
+	if (!root) {
+		return;
+	}
+	struct TreeNode *ptr = root;
+	while(ptr) {
+		if (!ptr -> leftChild) {
+			printf("%d\t", ptr -> value);
+			ptr = ptr -> rightChild;
+		}
+		else {
+			struct TreeNode *inorderPredecessor = ptr -> leftChild;
+			while(inorderPredecessor -> rightChild) {
+				inorderPredecessor = inorderPredecessor -> rightChild;
+			}
+			inorderPredecessor -> rightChild = ptr;
+			struct TreeNode *temp = ptr -> leftChild;
+			ptr -> leftChild = NULL;
+			ptr = temp;
+		}
+	}
+}
+
+void morrisPreorderTraversal(struct TreeNode *root) {
+	if (!root) {
+		return;
+	}
+	while(root) {
+		printf("%d\t", root -> value);
+		if (!root -> leftChild) {
+			root = root -> rightChild;
+		} else {
+			struct TreeNode *inPred = root -> leftChild;
+			while(inPred -> rightChild) {
+				inPred = inPred -> rightChild;
+			}
+			inPred -> rightChild = root -> rightChild;
+			root = root -> leftChild;
+		}
+	}
+}
+
+struct TreeNode *deleteTreeNode(struct TreeNode *root, int value) {
+	if (!root) {
+		return NULL;
+	}
+	if (root -> value == value) {
+		if (root -> rightChild) {
+			struct TreeNode *insucc = root -> rightChild;
+			while(insucc -> leftChild) {
+				insucc = insucc -> leftChild;
+			}
+			root -> value = insucc -> value;
+			root -> rightChild = deleteTreeNode(root -> rightChild, insucc -> value);
+		} else if (root -> leftChild) {
+			struct TreeNode *temp = root -> leftChild;
+			root -> leftChild = temp -> leftChild;
+			root = NULL;
+		} else {
+			root = NULL;
+		}
+		return root;
+	}
+	root -> leftChild = deleteTreeNode(root -> leftChild, value);
+	root -> rightChild = deleteTreeNode(root -> rightChild, value);
+	return root;
+//		Uncomment below code for deletion in binary search tree
+//	} else if (root -> value < value) {
+//		return deleteTree(root -> rightChild, value);
+//	}
+//	return deleteTree(root -> leftChild, value);
+}
+
+struct TreeNode *insertNodeBST(struct TreeNode *root, int value) {
+	if (!root) {
+		return createTreeNode(value);
+	}
+	if (root -> value == value) {
+		printf("\n%d already exist.", value);
+	}
+	if (root -> value > value) {
+		root -> leftChild = insertNodeBST(root -> leftChild, value);
+	}
+	if (root -> value < value) {
+		root -> rightChild = insertNodeBST(root -> rightChild, value);
+	}
+	return root;
+}
+
+struct TreeNode *createBST(int array[], int size) {
+	if (size == 0) {
+		return NULL;
+	}
+	int i = 0;
+	struct TreeNode *root = createTreeNode(array[0]);
+	struct TreeNode *temp = root;
+	for (i = 1; i < size; i++) {
+		temp = insertNodeBST(temp, array[i]);
+	}
+	return root;
+}
+
+struct TreeNode *constructBinaryTreeToDoublyLinkedList(struct TreeNode *root) {
+	if (!root) {
+		return root;
+	}
+
+	if (root -> leftChild) {
+		struct TreeNode *inPred = constructBinaryTreeToDoublyLinkedList(root -> leftChild);
+		while (inPred -> rightChild) {
+			inPred = inPred -> rightChild;
+		}
+		inPred -> rightChild = root;
+		root -> leftChild = inPred;
+	}
+
+	if (root -> rightChild) {
+		struct TreeNode *inSucc = constructBinaryTreeToDoublyLinkedList(root -> rightChild);
+		while (inSucc -> leftChild) {
+			inSucc = inSucc -> leftChild;
+		}
+		inSucc -> leftChild = root;
+		root -> rightChild = inSucc;
+	}
+	return root;
+}
+
+int isBinaryTreeBST(struct TreeNode *root, struct TreeNode **prevRoot) {
+	if (!root) {
+		return 1;
+	}
+	if (!isBinaryTreeBST(root -> leftChild, prevRoot)) {
+		return 0;
+	}
+	if (*prevRoot && (*prevRoot) -> value >= root -> value) {
+		return 0;
+	}
+	*prevRoot = root;
+	return isBinaryTreeBST(root -> rightChild, prevRoot);
+}
+
+/**
+ * incorrect
+ * min and max is not correctly set. Min and max should be picked up from a tree
+ * but here min and max from other parent tree is taken which is wrong.
+ * Ex. it may be possible that min and max set in sibling's root is taken into consideration for current child.
+ */
+int largestBinarySearchTree(struct TreeNode *root, int *maxValue,
+		int *minValue, struct TreeNode **maxBstRoot, int *maxSize) {
+	if (!root) {
+		return 0;
+	}
+	int isBst = 1;
+
+	int leftLargestBST = largestBinarySearchTree(root -> leftChild, maxValue, minValue, maxBstRoot, maxSize);
+	if (leftLargestBST == -1 || (leftLargestBST != 0 && root -> value <= *maxValue)) {
+		isBst = 0;
+	}
+	int rightLargestBST = largestBinarySearchTree(root -> rightChild, maxValue, minValue, maxBstRoot,maxSize);
+	if (rightLargestBST == -1 || (rightLargestBST != 0 && root -> value >= *minValue)) {
+		isBst = 0;
+	}
+
+	int currMin = (leftLargestBST == 0) ? root -> value : *minValue;
+	int currMax = (rightLargestBST == 0) ? root -> value : *maxValue;
+	if (isBst) {
+		*minValue = currMin;
+		*maxValue = currMax;
+		if (*maxSize < 1 + leftLargestBST + rightLargestBST) {
+			*maxBstRoot = root;
+			*maxSize = 1 + leftLargestBST + rightLargestBST;
+		}
+		return 1 + leftLargestBST + rightLargestBST;
+	}
+	return -1;
+}
+
+
+int largestBinarySearchTree2(struct TreeNode *root, int *maxValue,
+		int *minValue, struct TreeNode **maxBstRoot, int *maxSize) {
+	if (!root) {
+		return 0;
+	}
+
+	int leftMax = INT_MIN;
+	int leftLargestBST = largestBinarySearchTree2(root -> leftChild, &leftMax, minValue, maxBstRoot, maxSize);
+
+	int rightMin = INT_MAX;
+	int rightLargestBST = largestBinarySearchTree2(root -> rightChild, maxValue, &rightMin, maxBstRoot,maxSize);
+
+	if (leftLargestBST == 0) {
+		*maxValue = root -> value;
+	} else {
+		*maxValue = max(root -> value, *maxValue);
+	}
+
+	if (rightLargestBST == 0) {
+		*minValue = root -> value;
+	} else {
+		*minValue = min(root -> value, *minValue);
+	}
+
+	if (root -> value > leftMax && root -> value < rightMin) {
+		if (*maxSize < 1 + leftLargestBST + rightLargestBST) {
+			*maxBstRoot = root;
+			*maxSize = 1 + leftLargestBST + rightLargestBST;
+		}
+		return 1 + leftLargestBST + rightLargestBST;
+	}
+	return -1;
 }
