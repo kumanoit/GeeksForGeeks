@@ -8,10 +8,14 @@
 
 int array1[] = {1,2,3,4,5,6,7,8,9};
 int array2[] = {1,2,3,4,5,6,7,8,9};
-int array3[] = {33,67,50,25,80,24,64,23,38,70,90,20,30,55,110};
+int array3[] = {83,67,50,5,80,24,64,8,38,70,90,20,30,55,110};
 int array4[] = {1,2,3,4,5};
 int array5[] = {10, 8, 2, 3, 5, 2};
 int array6[] = {50, 30, 22, 38, 35, 60, 55, 59, 94, 98};
+int preorder[] = {50, 30, 22, 38,35, 60, 55, 59, 94, 98};
+int inorder[] = {22, 30, 35, 38, 50, 55, 59, 60, 94, 98};
+int postoder[] = {22, 35, 38, 30, 59, 55, 98, 94, 60, 50};
+int levelorder[] = {50, 30, 60, 22, 38, 55, 94, 35, 59, 98};
 int srno = 9009;
 
 struct TreeNode *root1 = NULL;
@@ -231,11 +235,143 @@ void demo(int a, int *b, int *c) {
 	demo(a-1, b, c);
 }
 
+void getMinimumDistanceLeafFromAnyNodeDemo() {
+	int value = 30;
+	int dummy = 0;
+	int array[] = {50,30, 15, 40, 10, 25, 35, 45, 5, 27, 33, 48};
+	binarySearchTree = createBST(array, sizeof(array) / sizeof(array[0]));
+	display(binarySearchTree);
+	printf("\nMinimum distance : %d",
+		getMinimumDistanceLeafFromAnyNode(binarySearchTree, value, &dummy));
+}
+
+void printMatrix(int mat[3][3], int n) {
+	int i,j;
+	for(i = 0; i < n; i++) {
+		printf("\n");
+		for (j = 0; j < n; j++) {
+			printf("%d\t", mat[i][j]);
+		}
+	}
+}
+void inplaceRotation(int mat[3][3], int n)
+{
+	int i;
+	int k;
+	int oldValue;
+	int newValue;
+	int start_i;
+	int start_j;
+	int next_i;
+	int next_j;
+	int iter_i;
+	int iter_j;
+	for (k = 0; k < n / 2; k++) {
+		for (i = 0; i < n -k - 1; i++) {
+			start_i = k;
+			start_j = i;
+			oldValue = mat[start_i][start_j];
+			iter_i = start_i;
+			iter_j = start_j;
+			do {
+				next_i = start_j;
+				next_j = n - start_i - 1;
+				newValue = mat[next_i][next_j];
+				mat[next_i][next_j] = oldValue;
+				oldValue = newValue;
+				iter_i = next_i;
+				iter_j = next_j;
+			} while(iter_i != start_i && iter_j != start_j);
+		}
+	}
+}
+
+void constructBSTFromPostorderDemo() {
+	int post[] = {22, 35, 38, 30, 59, 55, 98, 94, 60, 50};
+	int size = sizeof(post) / sizeof(post[0]);
+	struct TreeNode *root = constructBSTFromPostorder(post, size);
+	display(root);
+}
+
+void constructBSTFromPreorderDemo() {
+	int pre[] = {50, 30, 22, 38, 35, 60, 55, 59, 94, 98};
+	int size = sizeof(pre) / sizeof(pre[0]);
+	struct TreeNode *root = constructBSTFromPreorder(pre, size);
+	display(root);
+}
+
+void getMinimumDifferenceDemo() {
+	printf("\nMaxDifference = %d", getMaximumDifference(root3));
+}
+void isLeafTraversalSameDemo() {
+//	struct TreeNode *root1 = binarySearchTree;
+//	struct TreeNode *root2 = constructTreeInorderPreorder(inorder, preorder,
+//			sizeof(preorder) / sizeof(preorder[0]));
+	printf("\nPrinting leaf nodes in root1");
+	countLeafNodes(root2);
+	printf("\nPrinting leaf nodes in root2");
+	countLeafNodes(root3);
+	isLeafTraversalSame(root3, root2);
+}
+
+//http://www.geeksforgeeks.org/check-sum-covered-uncovered-nodes-binary-tree/
+void checkSumOfCoveredUncoveredNodesDemo() {
+	struct TreeNode *root = binarySearchTree;
+	display(root);
+	int leftBoundarySum = getLeftBoundarySum(root);
+	int rightBoundarySum = getRightBoundarySum(root);
+	printf("\nSum of left boundary is = %d", leftBoundarySum);
+	printf("\nSum of right boundary is = %d", rightBoundarySum);
+	int boundarySum = leftBoundarySum + rightBoundarySum - root -> value;
+	int treeSum = getTreeSum(binarySearchTree);
+	int innerNodeSum = treeSum - boundarySum;
+	printf("\nTreeSum = %d", treeSum);
+	printf("\nBoundary Node sum = %d", boundarySum);
+	printf("\nInner Node Sum = %d", innerNodeSum);
+}
+
+void checkBinaryTreeDivisionInTwoHalvesDemo() {
+	int res = 0;
+	binarySearchTree = deleteTreeNode(binarySearchTree, 98);
+	int n = getTreeSize(binarySearchTree);
+	printf("\nSize of binary tree = %d", n);
+	if ((n & 1) == 0) {
+		checkBinaryTreeDivisionInTwoHalves(binarySearchTree, n, &res);
+	}
+	if (res == 0) {
+		printf("\nCant divide tree into two equal halves.");
+	} else {
+		printf("\nYes divide tree into two equal halves.");
+	}
+}
+
 int main() {
 	initialize();
-	printNodesAtDistanceKFromAnyNodeDemo();
+	getMinimumDistanceLeafFromAnyNodeDemo();
 	return 0;
 }
 
+void countDivisors(int n)
+{    // Initialize count of divisors
+    int count = 0,i;
 
+    // Note that this loop runs till square root
+    for (i=1; i*i<=n; i++)
+    {
+        if (n%i==0) {
+
+            // If divisors are equal,increment
+            // count by one
+            // Otherwise increment count by 2
+            count += (n/i == i)? 1 : 2;
+            printf("%d\t", i);
+        }
+    }
+
+    printf("\n");
+    if (count%2==0)
+        printf("Even\n");
+    else
+        printf("Odd\n");
+}
 

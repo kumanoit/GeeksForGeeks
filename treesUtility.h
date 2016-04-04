@@ -177,19 +177,16 @@ void printAllRootToLeafPath(struct TreeNode *root, int level, int output[]) {
 	printAllRootToLeafPath(root -> rightChild, level + 1, output);
 }
 
+//http://www.geeksforgeeks.org/lowest-common-ancestor-in-a-binary-tree-set-2-using-parent-pointer/
 struct TreeNode *lowestCommonAncestor(struct TreeNode *root, int num1, int num2) {
 	if (!root) {
 		return NULL;
 	}
 	struct TreeNode *fromLeftTree = lowestCommonAncestor(root -> leftChild, num1, num2);
 	struct TreeNode *fromRightTree = lowestCommonAncestor(root -> rightChild, num1, num2);
-	if (root -> value == num1) {
-		return root;
-	}
-	if (root -> value == num2) {
-		return root;
-	}
-	if (fromLeftTree && fromRightTree) {
+	if (root -> value == num1 ||
+		root -> value == num2 ||
+		(fromLeftTree && fromRightTree)) {
 		return root;
 	}
 	return fromLeftTree != NULL ? fromLeftTree : fromRightTree;
@@ -247,13 +244,8 @@ int printNodesAtDistanceKFromAnyNode(struct TreeNode *root,
 		*p = 1;
 		return 1;
 	}
-	int left = printNodesAtDistanceKFromAnyNode(root ->leftChild, ptr, k, p);
-	int right = 0;
-	if (!left) {
-		right = printNodesAtDistanceKFromAnyNode(root -> rightChild, ptr, k, p);
-	}
 
-	if (left) {
+	if (printNodesAtDistanceKFromAnyNode(root ->leftChild, ptr, k, p)) {
 		if (k - *p == 0) {
 			printf("\t %d", root -> value);
 		} else {
@@ -263,7 +255,7 @@ int printNodesAtDistanceKFromAnyNode(struct TreeNode *root,
 		return 1;
 	}
 
-	if (right) {
+	else if (printNodesAtDistanceKFromAnyNode(root -> rightChild, ptr, k, p)) {
 		if (k - *p == 0) {
 			printf("\t %d", root -> value);
 		} else {
@@ -272,6 +264,7 @@ int printNodesAtDistanceKFromAnyNode(struct TreeNode *root,
 		(*p)++;
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -377,6 +370,37 @@ struct TreeNode *constructTreeInorderLevelorder(int in[], int level[], int size)
 	}
 	root -> leftChild = constructTreeInorderLevelorder(in, leftTreeNodes, i);
 	root -> rightChild = constructTreeInorderLevelorder(in + 1 + i, rightTreeNodes, size - i - 1);
+	return root;
+}
+
+//http://www.geeksforgeeks.org/construct-a-binary-search-tree-from-given-postorder/
+struct TreeNode *constructBSTFromPostorder(int po[], int size) {
+	if (size == 0) {
+		return NULL;
+	}
+	struct TreeNode *root = createTreeNode(po[size - 1]);
+	if (size == 1) {
+		return root;
+	}
+	int i = 0;
+	for (i = 0; po[size - 1] > po[i]; i++);
+	root -> leftChild = constructBSTFromPostorder(po, i);
+	root -> rightChild = constructBSTFromPostorder(po + i, size - i - 1);
+	return root;
+}
+
+struct TreeNode *constructBSTFromPreorder(int pre[], int size) {
+	if (size == 0) {
+		return NULL;
+	}
+	struct TreeNode *root = createTreeNode(pre[0]);
+	if (size == 1) {
+		return root;
+	}
+	int i = 0;
+	for (i = 1; pre[i] < pre[0]; i++);
+	root -> leftChild = constructBSTFromPreorder(pre + 1, i - 1);
+	root -> rightChild = constructBSTFromPreorder(pre + i, size - i);
 	return root;
 }
 
@@ -662,7 +686,6 @@ int largestBinarySearchTree(struct TreeNode *root, int *maxValue,
 	return -1;
 }
 
-
 int largestBinarySearchTree2(struct TreeNode *root, int *maxValue,
 		int *minValue, struct TreeNode **maxBstRoot, int *maxSize) {
 	if (!root) {
@@ -696,3 +719,165 @@ int largestBinarySearchTree2(struct TreeNode *root, int *maxValue,
 	}
 	return -1;
 }
+
+int getMinimumDistanceLeaf(struct TreeNode *root) {
+  if (!root) {
+	  return 0;
+  }
+  if (!(root->leftChild) && !(root->rightChild)) {
+    return 0;
+  }
+  return 1 + min(getMinimumDistanceLeaf(root -> leftChild),
+		  getMinimumDistanceLeaf(root -> rightChild));
+}
+
+//http://www.geeksforgeeks.org/closest-leaf-to-a-given-node-in-binary-tree/
+int getMinimumDistanceLeafFromAnyNode(struct TreeNode *root, int info, int *p) {
+  if (!root) {
+    return 0;
+  }
+  if (root -> value == info) {
+    *p = 1;
+    printf("\nMin>>%d", getMinimumDistanceLeaf(root));
+    return getMinimumDistanceLeaf(root);
+  }
+  int left = getMinimumDistanceLeafFromAnyNode(root -> leftChild, info, p);
+  int right = 0;
+  if (left == 0) {
+    right = getMinimumDistanceLeafFromAnyNode(root -> rightChild, info, p);
+  }
+  if (left != 0) {
+    int minDistanceLeafInRightSubtree = getMinimumDistanceLeaf(root -> rightChild) + (*p)++;//, info, p);
+    return min(minDistanceLeafInRightSubtree, left);
+  }
+  if (right != 0) {
+    int minDistanceLeafInLeftSubtree = getMinimumDistanceLeaf(root -> leftChild) + (*p)++;//, info, p);
+    return min(minDistanceLeafInLeftSubtree, right);
+  }
+  return 0;
+}
+//http://www.geeksforgeeks.org/maximum-difference-between-node-and-its-ancestor-in-binary-tree/
+int getMinimum(struct TreeNode *root, int *maxDiff) {
+	if (!root) {
+		return INT_MAX;
+	}
+	int minValue = min(getMinimum(root -> leftChild, maxDiff),
+					   getMinimum(root -> rightChild, maxDiff));
+	*maxDiff = max(*maxDiff, root -> value - minValue);
+	return min(root -> value, minValue);
+}
+
+//http://www.geeksforgeeks.org/maximum-difference-between-node-and-its-ancestor-in-binary-tree/
+int getMaximumDifference(struct TreeNode *root) {
+	int maxDiff = INT_MIN;
+	getMinimum(root, &maxDiff);
+	return maxDiff;
+}
+
+//http://www.geeksforgeeks.org/check-if-leaf-traversal-of-two-binary-trees-is-same/
+int isLeafTraversalSameInBothTrees(struct TreeNode *root1, struct TreeNode *root2) {
+	if (!root1 && !root2) {
+		return 1;
+	}
+	if (!root1 || !root2) {
+		return 0;
+	}
+	struct TreeNode *ptr1 = root1;
+	struct TreeNode *ptr2 = root2;
+	struct TreeNodeStack stack1;
+	struct TreeNodeStack stack2;
+	setStack(&stack1);
+	setStack(&stack2);
+	push(&stack1, root1);
+	push(&stack2, root2);
+	while(!(isStackEmpty(&stack1) && isStackEmpty(&stack2))) {
+
+		if (isStackEmpty(&stack1) || isStackEmpty(&stack2)) {
+			return 0;
+		}
+
+		while(!isStackEmpty(&stack1)) {
+			ptr1 = pop(&stack1);
+			if (isLeaf(ptr1)) {
+				break;
+			}
+			if (ptr1 -> rightChild) {
+				push(&stack1, ptr1 -> rightChild);
+			}
+			if (ptr1 -> leftChild) {
+				push(&stack1, ptr1 -> leftChild);
+			}
+		}
+
+		while(!isStackEmpty(&stack2)) {
+			ptr2 = pop(&stack2);
+			if (isLeaf(ptr2)) {
+				break;
+			}
+			if (ptr2 -> rightChild) {
+				push(&stack2, ptr2 -> rightChild);
+			}
+			if (ptr2 -> leftChild) {
+				push(&stack2, ptr2 -> leftChild);
+			}
+		}
+
+		if (ptr1 -> value != ptr2 -> value) {
+			printf("\n%d -> %d", ptr1 -> value, ptr2 -> value);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+void isLeafTraversalSame(struct TreeNode *root1, struct TreeNode *root2) {
+	int status = isLeafTraversalSameInBothTrees(root1, root2);
+	if (status) {
+		printf("\nYes, traversal is same.");
+	} else {
+		printf("\nNo, traversal is not same.");
+	}
+}
+
+int getLeftBoundarySum(struct TreeNode *root) {
+	if (!root) {
+		return 0;
+	}
+	if (root -> leftChild) {
+		return root -> value + getLeftBoundarySum(root -> leftChild);
+	}
+	return root -> value + getLeftBoundarySum(root -> rightChild);
+}
+
+int getRightBoundarySum(struct TreeNode *root) {
+	if (!root) {
+		return 0;
+	}
+	if (root -> rightChild) {
+		return root -> value + getRightBoundarySum(root -> rightChild);
+	}
+	return root -> value + getRightBoundarySum(root -> leftChild);
+}
+
+//http://www.geeksforgeeks.org/check-if-removing-an-edge-can-divide-a-binary-tree-in-two-halves/
+int checkBinaryTreeDivisionInTwoHalves(struct TreeNode *root, int n, int *res) {
+	if (!root) {
+		return 0;
+	}
+
+	int subTreeSize = 1
+						+	checkBinaryTreeDivisionInTwoHalves(root -> leftChild, n, res)
+						+	checkBinaryTreeDivisionInTwoHalves(root -> rightChild, n, res);
+	if (n - subTreeSize == subTreeSize) {
+		*res = 1;
+	}
+	return subTreeSize;
+}
+
+int getTreeSum(struct TreeNode *root) {
+	if (!root) {
+		return 0;
+	}
+	return root -> value + getTreeSum(root -> leftChild) + getTreeSum(root -> rightChild);
+}
+
