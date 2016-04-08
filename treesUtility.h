@@ -738,7 +738,8 @@ int getMinimumDistanceLeafFromAnyNode(struct TreeNode *root, int info, int *p) {
   }
   if (root -> value == info) {
     *p = 1;
-    printf("\nMin>>%d", getMinimumDistanceLeaf(root));
+    printf("\nMin distance in tree rooted at given node.%d >> %d",
+    		root -> value, getMinimumDistanceLeaf(root));
     return getMinimumDistanceLeaf(root);
   }
   int left = getMinimumDistanceLeafFromAnyNode(root -> leftChild, info, p);
@@ -747,11 +748,13 @@ int getMinimumDistanceLeafFromAnyNode(struct TreeNode *root, int info, int *p) {
     right = getMinimumDistanceLeafFromAnyNode(root -> rightChild, info, p);
   }
   if (left != 0) {
-    int minDistanceLeafInRightSubtree = getMinimumDistanceLeaf(root -> rightChild) + (*p)++;//, info, p);
+    int minDistanceLeafInRightSubtree = getMinimumDistanceLeaf(root -> rightChild) + *p + 1;
+    (*p)++;
     return min(minDistanceLeafInRightSubtree, left);
   }
   if (right != 0) {
-    int minDistanceLeafInLeftSubtree = getMinimumDistanceLeaf(root -> leftChild) + (*p)++;//, info, p);
+    int minDistanceLeafInLeftSubtree = getMinimumDistanceLeaf(root -> leftChild) + *p + 1;
+    (*p)++;
     return min(minDistanceLeafInLeftSubtree, right);
   }
   return 0;

@@ -238,9 +238,10 @@ void demo(int a, int *b, int *c) {
 void getMinimumDistanceLeafFromAnyNodeDemo() {
 	int value = 30;
 	int dummy = 0;
-	int array[] = {50,30, 15, 40, 10, 25, 35, 45, 5, 27, 33, 48};
+	int array[] = {50, 30, 22, 38, 35, 60, 34, 18, 20};
 	binarySearchTree = createBST(array, sizeof(array) / sizeof(array[0]));
 	display(binarySearchTree);
+	printf("\n%d", getMinimumDistanceLeaf(binarySearchTree));
 	printf("\nMinimum distance : %d",
 		getMinimumDistanceLeafFromAnyNode(binarySearchTree, value, &dummy));
 }
@@ -373,5 +374,12 @@ void countDivisors(int n)
         printf("Even\n");
     else
         printf("Odd\n");
+}
+
+int mainC() {
+
+	double x = 1.14;
+	double res = x * (pow(x, 9) - 1) / (x - 1);
+	printf("%f", res);
 }
 
