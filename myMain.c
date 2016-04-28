@@ -5,6 +5,5 @@
  *      Author: kuma
  */
 
-int mainA() {
-
-}
+#include<stdio.h>
+#include<math.h>

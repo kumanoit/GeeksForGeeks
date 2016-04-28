@@ -15,3 +15,4 @@
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
+//#define abs(a, b) ((a - b) < 0 ? (b - a) : (a - b))
